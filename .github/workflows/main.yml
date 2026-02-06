@@ -29,8 +29,10 @@ jobs:
 
       - name: Update npm dependencies
         run: |
-          npm audit fix --force
+          npm ci
           npm update
+          npm audit fix --force
+          
 
       - name: Build Docker image
         run: |
