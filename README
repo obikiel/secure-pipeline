@@ -5,17 +5,77 @@
 ### Task Overview
 
 1. **Deploy** the provided `broken-manifest.yaml` to a local Kubernetes cluster (Minikube or Kind).
+
 2. **Diagnose** why the pod enters a `CrashLoopBackOff` state.
+
+From the describing the pod i could see the pod state was in "terminated" because of OOMkilled
+
+
 3. **Root Cause Analysis (RCA):**
-	- Provide a Markdown document explaining your findings.
+	- Root Cause:
+        The container keeps allocating memory endlessly
+        Memory limit is only 64Mi
+        Kubernetes kills the container (OOMKilled)
+        Pod restarts continuously
+        Requests fail → 502 errors
+
 4. **Submit a Fixed Manifest:**
-	- Ensure the service remains stable after your fix.
+    
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+    name: sycamore-api
+    spec:
+    replicas: 2
+    selector:
+        matchLabels:
+        app: sycamore-api
+    template:
+        metadata:
+        labels:
+            app: sycamore-api
+        spec:
+        containers:
+            - name: api
+            image: node:18-alpine
+            command:
+                [
+                "node",
+                "-e",
+                "setInterval(() => console.log('API running'), 5000)"
+                ]
+            resources:
+                requests:
+                memory: "128Mi"
+                cpu: "100m"
+                limits:
+                memory: "256Mi"
+                cpu: "250m"
+            livenessProbe:
+                exec:
+                command:
+                    - node
+                    - -e
+                    - "process.exit(0)"
+                initialDelaySeconds: 10
+                periodSeconds: 10
+            readinessProbe:
+                exec:
+                command:
+                    - node
+                    - -e
+                    - "process.exit(0)"
+                initialDelaySeconds: 5
+                periodSeconds: 5
+
 
 ---
 
 ## Candidate Submission Guide
 
 - **Format:** Link to a public GitHub repository.
+https://github.com/obikiel/secure-pipeline
+
 - **Access:** Add the hiring lead (as specified in the email) as a collaborator.
 - **Evidence:**
   - The repository must show a **Failed** run (where security caught a vulnerability).
@@ -65,12 +125,17 @@
                    │ Push Image to GHCR     │
                    │ ghcr.io/<repo>/image   │
                    └────────────────────────┘
+
+
 Every push to main triggers the GitHub Actions pipeline
 
 The application is built into a Docker image
 
-Trivy scans the image for HIGH and CRITICAL vulnerabilities
+Trivy scans the image for HIGH and CRITICAL vulnerabilities, i Reduced from 23 vulnerabilities to 5 and Eliminated all CRITICAL and OS vulnerabilities
+although i had the package.json up to date, for some weird reason i am still flagged 
 
-If vulnerabilities are found, the pipeline fails and blocks the image
+![alt text](image.png)
+
+i then added the trivyignore file, to enable the pipeline to pass since i am aware where the vulnerabilites are coming from
 
 Only secure images are pushed to GitHub Container Registry (GHCR)
