@@ -14,8 +14,8 @@
     "tar": "^7.5.7"
   },
   "engines": {
-    "node": ">=14.0.0"
-  },
+    "node": ">=20.0.0"
+},
   "keywords": [],
   "author": "",
   "license": "ISC"
