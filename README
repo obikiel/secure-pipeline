@@ -20,3 +20,57 @@
 - **Evidence:**
   - The repository must show a **Failed** run (where security caught a vulnerability).
   - The repository must show a **Successful** run (after potentially updating the base image or ignoring non-fixed vulnerabilities if allowed).
+
+
+┌──────────────┐
+│  Developer   │
+│  Git Push    │
+└──────┬───────┘
+       │
+       ▼
+┌────────────────────┐
+│ GitHub Repository  │
+│   (main branch)    │
+└──────┬─────────────┘
+       │
+       ▼
+┌──────────────────────────────┐
+│ GitHub Actions (CI Pipeline) │
+└───────────┬──────────────────┘
+            │
+            ▼
+   ┌──────────────────┐
+   │ Docker Build     │
+   │ (Node.js App)    │
+   └────────┬─────────┘
+            │
+            ▼
+   ┌──────────────────────────┐
+   │ Trivy Security Scan      │
+   │ - OS packages            │
+   │ - Node.js dependencies   │
+   └────────┬─────────────────┘
+            │
+     ┌──────┴───────────┐
+     │                  │
+     ▼                  ▼
+┌──────────────┐   ┌──────────────────────┐
+│  FAIL BUILD  │   │   PASS SECURITY SCAN │
+│ (HIGH /     │   │  No HIGH / CRITICAL  │
+│  CRITICAL)  │   │   vulnerabilities     │
+└──────────────┘   └──────────┬───────────┘
+                               │
+                               ▼
+                   ┌────────────────────────┐
+                   │ Push Image to GHCR     │
+                   │ ghcr.io/<repo>/image   │
+                   └────────────────────────┘
+Every push to main triggers the GitHub Actions pipeline
+
+The application is built into a Docker image
+
+Trivy scans the image for HIGH and CRITICAL vulnerabilities
+
+If vulnerabilities are found, the pipeline fails and blocks the image
+
+Only secure images are pushed to GitHub Container Registry (GHCR)
