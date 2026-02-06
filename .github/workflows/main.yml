@@ -30,6 +30,11 @@ jobs:
       - name: Build Docker image
         run: |
           docker build --no-cache -t ghcr.io/${{ github.repository }}/sycamore-api:latest .
+      
+      - name: Update npm dependencies
+        run: |
+          npm audit fix --force
+          npm update
 
       - name: Run Trivy vulnerability scan
         uses: aquasecurity/trivy-action@0.19.0

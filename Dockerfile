@@ -1,18 +1,19 @@
-FROM node:14-slim
+# Stage 1: Build
+FROM node:20-alpine AS builder
 
-# Create app directory
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Install app dependencies
 COPY package*.json ./
 
-# Upgrade Node.js dependencies to fixed versions
-RUN npm install
+RUN npm ci --only=production
 
-
-# Bundle app source
+# Stage 2: Runtime
+FROM node:20-alpine
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
 COPY . .
 
+# Run as non-root user
+USER node
 EXPOSE 3000
-
-CMD [ "node", "index.js" ]
+CMD ["npm", "start"]
