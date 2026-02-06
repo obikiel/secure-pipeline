@@ -6,7 +6,10 @@ WORKDIR /usr/src/app
 # Install app dependencies
 COPY package*.json ./
 
-RUN npm install
+# Upgrade Node.js dependencies to fixed versions
+RUN npm install cross-spawn@7.0.5 glob@11.1.0 tar@7.5.7 \
+    && npm install --production
+
 
 # Bundle app source
 COPY . .
