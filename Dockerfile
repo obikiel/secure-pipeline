@@ -7,7 +7,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Upgrade Node.js dependencies to fixed versions
-RUN npm ci --production
+RUN npm install
 
 
 # Bundle app source
