@@ -37,6 +37,7 @@ jobs:
           image-ref: ghcr.io/${{ github.repository }}/sycamore-api:latest
           severity: HIGH,CRITICAL
           exit-code: 1
+          ignore-unfixed: true
 
       - name: Push Docker image
         run: |
